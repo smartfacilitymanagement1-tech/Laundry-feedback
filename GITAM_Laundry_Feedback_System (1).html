@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GITAM Laundry Feedback System</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #007069;
+    --teal-dark: #1A2E2B;
+    --teal-light: #009688;
+    --orange: #F26B43;
+    --orange-light: #FF8A65;
+    --bg: #F4F6F5;
+    --card: #ffffff;
+    --border: #E0E8E6;
+    --text: #1A2E2B;
+    --muted: #6B8C87;
+    --success: #2ECC71;
+    --warn: #F39C12;
+    --danger: #E74C3C;
+    --star-on: #F26B43;
+    --star-off: #D9E5E3;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  .nav {
+    background: var(--teal-dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 32px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(0,0,0,.25);
+  }
+  .nav-brand { display: flex; align-items: center; gap: 12px; }
+  .nav-logo {
+    width: 36px; height: 36px;
+    background: var(--orange);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: #fff;
+  }
+  .nav-title { font-family: 'Playfair Display', serif; font-size: 18px; color: #fff; }
+  .nav-sub { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 1px; }
+  .nav-tabs { display: flex; gap: 4px; }
+  .nav-tab {
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all .2s;
+    background: transparent;
+    color: rgba(255,255,255,.6);
+  }
+  .nav-tab.active, .nav-tab:hover { background: var(--orange); color: #fff; }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ───────── FEEDBACK FORM PAGE ───────── */
+  .form-page {
+    max-width: 640px;
+    margin: 40px auto;
+    padding: 0 16px 60px;
+  }
+
+  .form-header {
+    background: linear-gradient(135deg, var(--teal-dark) 0%, var(--teal) 100%);
+    border-radius: 20px;
+    padding: 36px 36px 30px;
+    color: #fff;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .form-header::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 180px; height: 180px;
+    background: rgba(255,255,255,.05);
+    border-radius: 50%;
+  }
+  .form-header h1 { font-family: 'Playfair Display', serif; font-size: 26px; margin-bottom: 6px; }
+  .form-header p { font-size: 13px; opacity: .75; }
+  .form-header .badge {
+    display: inline-block;
+    background: var(--orange);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+
+  .form-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,112,105,.06);
+  }
+  .form-card h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--teal-dark);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-card h3 .icon {
+    width: 28px; height: 28px;
+    background: var(--bg);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+
+  .field { margin-bottom: 16px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: #fff;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--teal); }
+  .field textarea { resize: vertical; min-height: 80px; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Star Rating */
+  .star-group { display: flex; gap: 6px; flex-direction: row-reverse; justify-content: flex-end; }
+  .star-group input { display: none; }
+  .star-group label {
+    font-size: 28px;
+    cursor: pointer;
+    color: var(--star-off);
+    transition: color .15s;
+  }
+  .star-group input:checked ~ label,
+  .star-group label:hover,
+  .star-group label:hover ~ label { color: var(--star-on); }
+
+  /* Emoji Rating */
+  .emoji-group { display: flex; gap: 10px; flex-wrap: wrap; }
+  .emoji-btn {
+    flex: 1;
+    min-width: 64px;
+    padding: 10px 6px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+    cursor: pointer;
+    text-align: center;
+    transition: all .2s;
+    font-size: 22px;
+  }
+  .emoji-btn .label { font-size: 10px; color: var(--muted); display: block; margin-top: 2px; }
+  .emoji-btn.selected, .emoji-btn:hover { border-color: var(--teal); background: rgba(0,112,105,.07); }
+  .emoji-btn.selected .label { color: var(--teal); font-weight: 600; }
+
+  /* Checkbox Grid */
+  .check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all .2s;
+    font-size: 13px;
+  }
+  .check-item input { accent-color: var(--teal); width: 15px; height: 15px; cursor: pointer; }
+  .check-item:has(input:checked) { border-color: var(--teal); background: rgba(0,112,105,.06); }
+
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-light));
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: 0 4px 16px rgba(0,112,105,.3);
+    margin-top: 8px;
+  }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,112,105,.4); }
+  .submit-btn:active { transform: translateY(0); }
+
+  /* Success Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--teal-dark);
+    color: #fff;
+    padding: 14px 28px;
+    border-radius: 40px;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    z-index: 999;
+    transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ───────── DASHBOARD PAGE ───────── */
+  .dash-page {
+    padding: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .dash-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .dash-header h2 { font-family: 'Playfair Display', serif; font-size: 24px; }
+  .dash-header p { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  .filter-bar {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  .filter-bar select {
+    padding: 8px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: #fff;
+    outline: none;
+    cursor: pointer;
+  }
+  .btn-export {
+    padding: 8px 18px;
+    background: var(--orange);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-export:hover { background: var(--orange-light); }
+
+  /* KPI Cards */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  @media(max-width:900px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+  @media(max-width:500px) { .kpi-grid { grid-template-columns: 1fr; } }
+
+  .kpi-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 20px 22px;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,112,105,.1); }
+  .kpi-card .kpi-icon {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    margin-bottom: 12px;
+  }
+  .kpi-card .kpi-val { font-size: 28px; font-weight: 700; color: var(--text); }
+  .kpi-card .kpi-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .kpi-card .kpi-trend { font-size: 11px; margin-top: 6px; font-weight: 600; }
+  .kpi-card .kpi-trend.up { color: var(--success); }
+  .kpi-card .kpi-trend.down { color: var(--danger); }
+  .kpi-card::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; right: -20px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: .07;
+  }
+  .kpi-card:nth-child(1) .kpi-icon { background: rgba(0,112,105,.1); }
+  .kpi-card:nth-child(1)::after { background: var(--teal); }
+  .kpi-card:nth-child(2) .kpi-icon { background: rgba(242,107,67,.1); }
+  .kpi-card:nth-child(2)::after { background: var(--orange); }
+  .kpi-card:nth-child(3) .kpi-icon { background: rgba(46,204,113,.1); }
+  .kpi-card:nth-child(3)::after { background: var(--success); }
+  .kpi-card:nth-child(4) .kpi-icon { background: rgba(243,156,18,.1); }
+  .kpi-card:nth-child(4)::after { background: var(--warn); }
+
+  /* Charts Grid */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+  @media(max-width:768px) { .charts-grid { grid-template-columns: 1fr; } }
+
+  .chart-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 22px;
+    border: 1px solid var(--border);
+  }
+  .chart-card.wide { grid-column: span 2; }
+  @media(max-width:768px) { .chart-card.wide { grid-column: span 1; } }
+
+  .chart-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--teal-dark);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .chart-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* Feedback Table */
+  .table-card {
+    background: var(--card);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .table-head {
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-head h3 { font-size: 14px; font-weight: 600; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: var(--bg);
+    padding: 11px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    white-space: nowrap;
+  }
+  td {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(0,112,105,.03); }
+
+  .stars-display { color: var(--star-on); font-size: 13px; }
+  .tag {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tag.good { background: rgba(46,204,113,.12); color: #1a9c50; }
+  .tag.avg { background: rgba(243,156,18,.12); color: #c47e07; }
+  .tag.poor { background: rgba(231,76,60,.12); color: #c0392b; }
+
+  /* QR Modal */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.5);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 20px;
+    padding: 36px;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+    animation: popIn .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes popIn {
+    from { transform: scale(.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal h2 { font-family: 'Playfair Display', serif; font-size: 22px; margin-bottom: 6px; }
+  .modal p { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  #qr-container { display: flex; justify-content: center; margin-bottom: 20px; }
+  #qr-container canvas, #qr-container img { border-radius: 12px; border: 6px solid var(--bg); }
+  .modal-url {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 8px 14px;
+    border-radius: 8px;
+    word-break: break-all;
+    margin-bottom: 20px;
+    font-family: monospace;
+  }
+  .modal-close {
+    padding: 10px 28px;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-qr {
+    padding: 8px 18px;
+    background: var(--teal-dark);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-qr:hover { background: var(--teal); }
+
+  /* Issue Heatmap */
+  .issue-bars { display: flex; flex-direction: column; gap: 10px; }
+  .issue-row { display: flex; align-items: center; gap: 10px; }
+  .issue-name { font-size: 12px; color: var(--text); min-width: 130px; }
+  .issue-bar-wrap { flex: 1; background: var(--bg); border-radius: 20px; height: 8px; overflow: hidden; }
+  .issue-bar { height: 100%; border-radius: 20px; background: var(--teal); transition: width 1s ease; }
+  .issue-count { font-size: 12px; font-weight: 600; color: var(--teal-dark); min-width: 30px; text-align: right; }
+
+  /* Satisfaction Gauge */
+  .gauge-wrap { display: flex; flex-direction: column; align-items: center; }
+  .gauge-num { font-size: 42px; font-weight: 700; color: var(--teal); line-height: 1; }
+  .gauge-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .gauge-stars { font-size: 22px; color: var(--star-on); margin-top: 6px; }
+
+  .no-data { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">G</div>
+    <div>
+      <div class="nav-title">GITAM Laundry Feedback</div>
+      <div class="nav-sub"></div>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" id="tab-form" onclick="showPage('form')">📋 Feedback Form</button>
+    <button class="nav-tab" id="tab-dashboard" onclick="adminLogin()" style="display:none">📊 Dashboard</button>
+    <button class="nav-tab" id="btn-admin-login" onclick="adminLogin()">🔐 Admin</button>
+    <button class="nav-tab" id="btn-admin-logout" onclick="adminLogout()" style="display:none">🚪 Logout</button>
+  </div>
+</nav>
+
+<!-- ══════════ FEEDBACK FORM PAGE ══════════ -->
+<div id="page-form" class="page active">
+<div class="form-page">
+
+  <div class="form-header">
+    <div class="badge">🧺 Laundry Services Feedback</div>
+    <h1>How was your laundry experience?</h1>
+    <p>Your feedback helps us improve service quality</p>
+  </div>
+
+  <!-- Student Info -->
+  <div class="form-card">
+    <h3><span class="icon">🎓</span> Student Details</h3>
+    <div class="field-row">
+      <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="f-name" placeholder="Your name">
+      </div>
+      <div class="field">
+        <label>Student ID / Roll No.</label>
+        <input type="text" id="f-roll" placeholder="e.g. BU21CS001">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Hostel Block</label>
+        <select id="f-block">
+          <option value="">Select block</option>
+          <option>NBH</option>
+          <option>SBH</option>
+          <option>Vinay Sadan</option>
+          <option>Staff Quarters</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Room Number</label>
+        <input type="text" id="f-room" placeholder="e.g. 204">
+      </div>
+    </div>
+    <div class="field">
+      <label>Contact / WhatsApp (Optional)</label>
+      <input type="tel" id="f-contact" placeholder="+91 xxxxxxxxxx">
+    </div>
+  </div>
+
+  <!-- Overall Rating -->
+  <div class="form-card">
+    <h3><span class="icon">⭐</span> Overall Rating</h3>
+    <div class="field">
+      <label>Rate your overall experience</label>
+      <div class="star-group">
+        <input type="radio" name="overall" id="s5" value="5"><label for="s5">★</label>
+        <input type="radio" name="overall" id="s4" value="4"><label for="s4">★</label>
+        <input type="radio" name="overall" id="s3" value="3"><label for="s3">★</label>
+        <input type="radio" name="overall" id="s2" value="2"><label for="s2">★</label>
+        <input type="radio" name="overall" id="s1" value="1"><label for="s1">★</label>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:16px">
+      <label>How do you feel about the service?</label>
+      <div class="emoji-group">
+        <div class="emoji-btn" data-val="very-happy" onclick="selectEmoji(this)">😄<span class="label">Very Happy</span></div>
+        <div class="emoji-btn" data-val="satisfied" onclick="selectEmoji(this)">🙂<span class="label">Satisfied</span></div>
+        <div class="emoji-btn" data-val="neutral" onclick="selectEmoji(this)">😐<span class="label">Neutral</span></div>
+        <div class="emoji-btn" data-val="unhappy" onclick="selectEmoji(this)">🙁<span class="label">Unhappy</span></div>
+        <div class="emoji-btn" data-val="angry" onclick="selectEmoji(this)">😡<span class="label">Angry</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Specific Ratings -->
+  <div class="form-card">
+    <h3><span class="icon">📋</span> Service Category Ratings</h3>
+    <div id="category-ratings">
+
+      <div class="field" style="margin-bottom:18px">
+        <label>Cleanliness of clothes</label>
+        <div class="star-group">
+          <input type="radio" name="cat-cleanliness" id="c5-cleanliness" value="5"><label for="c5-cleanliness">★</label>
+          <input type="radio" name="cat-cleanliness" id="c4-cleanliness" value="4"><label for="c4-cleanliness">★</label>
+          <input type="radio" name="cat-cleanliness" id="c3-cleanliness" value="3"><label for="c3-cleanliness">★</label>
+          <input type="radio" name="cat-cleanliness" id="c2-cleanliness" value="2"><label for="c2-cleanliness">★</label>
+          <input type="radio" name="cat-cleanliness" id="c1-cleanliness" value="1"><label for="c1-cleanliness">★</label>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:18px">
+        <label>Timeliness of delivery</label>
+        <div class="star-group">
+          <input type="radio" name="cat-timeliness" id="c5-timeliness" value="5"><label for="c5-timeliness">★</label>
+          <input type="radio" name="cat-timeliness" id="c4-timeliness" value="4"><label for="c4-timeliness">★</label>
+          <input type="radio" name="cat-timeliness" id="c3-timeliness" value="3"><label for="c3-timeliness">★</label>
+          <input type="radio" name="cat-timeliness" id="c2-timeliness" value="2"><label for="c2-timeliness">★</label>
+          <input type="radio" name="cat-timeliness" id="c1-timeliness" value="1"><label for="c1-timeliness">★</label>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:18px">
+        <label>Staff behavior &amp; courtesy</label>
+        <div class="star-group">
+          <input type="radio" name="cat-staff" id="c5-staff" value="5"><label for="c5-staff">★</label>
+          <input type="radio" name="cat-staff" id="c4-staff" value="4"><label for="c4-staff">★</label>
+          <input type="radio" name="cat-staff" id="c3-staff" value="3"><label for="c3-staff">★</label>
+          <input type="radio" name="cat-staff" id="c2-staff" value="2"><label for="c2-staff">★</label>
+          <input type="radio" name="cat-staff" id="c1-staff" value="1"><label for="c1-staff">★</label>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:18px">
+        <label>Facility &amp; equipment</label>
+        <div class="star-group">
+          <input type="radio" name="cat-facility" id="c5-facility" value="5"><label for="c5-facility">★</label>
+          <input type="radio" name="cat-facility" id="c4-facility" value="4"><label for="c4-facility">★</label>
+          <input type="radio" name="cat-facility" id="c3-facility" value="3"><label for="c3-facility">★</label>
+          <input type="radio" name="cat-facility" id="c2-facility" value="2"><label for="c2-facility">★</label>
+          <input type="radio" name="cat-facility" id="c1-facility" value="1"><label for="c1-facility">★</label>
+        </div>
+      </div>
+
+      <div class="field" style="margin-bottom:18px">
+        <label>Value for money</label>
+        <div class="star-group">
+          <input type="radio" name="cat-value" id="c5-value" value="5"><label for="c5-value">★</label>
+          <input type="radio" name="cat-value" id="c4-value" value="4"><label for="c4-value">★</label>
+          <input type="radio" name="cat-value" id="c3-value" value="3"><label for="c3-value">★</label>
+          <input type="radio" name="cat-value" id="c2-value" value="2"><label for="c2-value">★</label>
+          <input type="radio" name="cat-value" id="c1-value" value="1"><label for="c1-value">★</label>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Issues Faced -->
+  <div class="form-card">
+    <h3><span class="icon">⚠️</span> Issues Faced (Select all that apply)</h3>
+    <div class="check-grid">
+      <label class="check-item"><input type="checkbox" value="Clothes not cleaned properly"> Clothes not cleaned properly</label>
+      <label class="check-item"><input type="checkbox" value="Missing items"> Missing items</label>
+      <label class="check-item"><input type="checkbox" value="Delayed delivery"> Delayed delivery</label>
+      <label class="check-item"><input type="checkbox" value="Clothes damaged"> Clothes damaged / torn</label>
+      <label class="check-item"><input type="checkbox" value="Bad smell after wash"> Bad smell after wash</label>
+      <label class="check-item"><input type="checkbox" value="Wrong clothes returned"> Wrong clothes returned</label>
+      <label class="check-item"><input type="checkbox" value="Machine not working"> Machine not working</label>
+      <label class="check-item"><input type="checkbox" value="Staff behaviour"> Staff behaviour issue</label>
+    </div>
+  </div>
+
+  <!-- Comments -->
+  <div class="form-card">
+    <h3><span class="icon">💬</span> Comments & Suggestions</h3>
+    <div class="field">
+      <label>What did we do well?</label>
+      <textarea id="f-positive" placeholder="Tell us what you liked..."></textarea>
+    </div>
+    <div class="field">
+      <label>What can we improve?</label>
+      <textarea id="f-improve" placeholder="Your suggestions are valuable..."></textarea>
+    </div>
+    <div class="field">
+      <label>Would you recommend this service?</label>
+      <select id="f-recommend">
+        <option value="">Select...</option>
+        <option value="yes">Yes, definitely</option>
+        <option value="maybe">Maybe</option>
+        <option value="no">No</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="submit-btn" onclick="submitFeedback()">✅ Submit Feedback</button>
+</div>
+</div>
+
+<!-- ══════════ DASHBOARD PAGE ══════════ -->
+<div id="page-dashboard" class="page">
+<div class="dash-page">
+
+  <div class="dash-header">
+    <div>
+      <h2>Laundry Feedback Dashboard</h2>
+      <p id="dash-subtitle">All feedback · All blocks</p>
+    </div>
+    <div class="filter-bar">
+      <select id="filter-block" onchange="renderDashboard()">
+        <option value="all">All Blocks</option>
+        <option>NBH</option>
+        <option>SBH</option>
+        <option>Vinay Sadan</option>
+        <option>Staff Quarters</option>
+      </select>
+      <select id="filter-days" onchange="renderDashboard()">
+        <option value="all">All Time</option>
+        <option value="7">Last 7 Days</option>
+        <option value="30">Last 30 Days</option>
+      </select>
+      <button class="btn-qr" onclick="openQR()">📱 QR Code</button>
+      <button class="btn-export" onclick="exportCSV()">⬇️ Export CSV</button>
+      <button class="btn-export" onclick="clearAllFeedback()" style="background:var(--danger)">🗑️ Clear All Data</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid" id="kpi-grid">
+    <div class="kpi-card"><div class="kpi-icon">📝</div><div class="kpi-val" id="kpi-total">0</div><div class="kpi-label">Total Responses</div><div class="kpi-trend up" id="kpi-total-t"></div></div>
+    <div class="kpi-card"><div class="kpi-icon">⭐</div><div class="kpi-val" id="kpi-avg">—</div><div class="kpi-label">Avg Rating</div><div class="kpi-trend" id="kpi-avg-t"></div></div>
+    <div class="kpi-card"><div class="kpi-icon">😊</div><div class="kpi-val" id="kpi-sat">—</div><div class="kpi-label">Satisfaction Rate</div><div class="kpi-trend up" id="kpi-sat-t"></div></div>
+    <div class="kpi-card"><div class="kpi-icon">⚠️</div><div class="kpi-val" id="kpi-issues">—</div><div class="kpi-label">Issues Reported</div><div class="kpi-trend down" id="kpi-issues-t"></div></div>
+  </div>
+
+  <!-- Charts Row 1 -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-title">Rating Distribution <span class="chart-badge">All Responses</span></div>
+      <div class="chart-wrap"><canvas id="chartRating"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Sentiment Breakdown <span class="chart-badge">Emoji</span></div>
+      <div class="chart-wrap"><canvas id="chartSentiment"></canvas></div>
+    </div>
+    <div class="chart-card wide">
+      <div class="chart-title">Daily Feedback Trend <span class="chart-badge">Last 14 Days</span></div>
+      <div class="chart-wrap" style="height:180px"><canvas id="chartTrend"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Feedback by Block <span class="chart-badge">All Blocks</span></div>
+      <div class="chart-wrap"><canvas id="chartBlock"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Issues Reported <span class="chart-badge">Top Issues</span></div>
+      <div id="issue-bars" class="issue-bars" style="margin-top:8px; min-height:180px"></div>
+    </div>
+  </div>
+
+  <!-- Category Avg Table -->
+  <div class="chart-card" style="margin-bottom:20px">
+    <div class="chart-title">Category-wise Average Ratings</div>
+    <div class="chart-wrap" style="height:200px"><canvas id="chartCategories"></canvas></div>
+  </div>
+
+  <!-- Feedback Table -->
+  <div class="table-card">
+    <div class="table-head">
+      <h3>📋 Recent Feedback Entries</h3>
+      <span id="table-count" style="font-size:12px;color:var(--muted)"></span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Block</th>
+            <th>Room</th>
+            <th>Date</th>
+            <th>Slot</th>
+            <th>Rating</th>
+            <th>Sentiment</th>
+            <th>Issues</th>
+            <th>Recommend</th>
+          </tr>
+        </thead>
+        <tbody id="feedback-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- QR Modal -->
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal">
+    <h2>📱 Scan to Give Feedback</h2>
+    <p>Enter the URL where this file is hosted, then generate the QR code</p>
+    <div style="display:flex;gap:8px;margin-bottom:16px;text-align:left">
+      <input id="qr-url-input" type="text" placeholder="https://your-hosted-url.com/feedback.html"
+        style="flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none"
+        oninput="qrGenerated=false"
+      />
+      <button onclick="generateQR()" style="padding:9px 14px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Generate</button>
+    </div>
+    <div id="qr-container"></div>
+    <div class="modal-url" id="qr-url-display"></div>
+    <p style="font-size:11px;color:var(--muted);margin-bottom:16px">Print & place at NBH · SBH · Vinay Sadan · Staff Quarters laundry rooms</p>
+    <button class="modal-close" onclick="closeQR()">Close</button>
+  </div>
+</div>
+
+<!-- Admin Login Modal -->
+<div class="modal-overlay" id="admin-modal">
+  <div class="modal">
+    <h2>🔐 Admin Login</h2>
+    <p>Enter the admin password to access the dashboard</p>
+    <div style="position:relative;margin-bottom:12px">
+      <input id="admin-password" type="password" placeholder="Enter password"
+        style="width:100%;padding:10px 44px 10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;"
+        onkeydown="if(event.key==='Enter')checkAdmin()"
+      />
+      <span onclick="toggleAdminPwd()" id="eye-toggle"
+        style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px;user-select:none;color:var(--muted)">👁️</span>
+    </div>
+    <div id="admin-error" style="color:var(--danger);font-size:12px;margin-bottom:10px;display:none">❌ Incorrect password. Try again.</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button onclick="checkAdmin()" style="padding:10px 28px;background:var(--teal);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer">Login</button>
+      <button onclick="closeAdminModal()" style="padding:10px 28px;background:var(--bg);color:var(--text);border:1.5px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast">✅ Feedback submitted successfully!</div>
+
+<script>
+// ── DATA STORE ──────────────────────────────────────────
+const STORE_KEY = 'gitam_laundry_feedback_v1';
+let feedbackData = JSON.parse(localStorage.getItem(STORE_KEY) || '[]');
+
+const CATEGORIES = [
+  { id: 'cleanliness', label: 'Cleanliness of clothes' },
+  { id: 'timeliness', label: 'Timeliness of delivery' },
+  { id: 'staff', label: 'Staff behavior & courtesy' },
+  { id: 'facility', label: 'Facility' },
+  { id: 'value', label: 'Value for money' },
+];
+
+const EMOJI_MAP = { 'very-happy':'😄', satisfied:'🙂', neutral:'😐', unhappy:'🙁', angry:'😡' };
+const EMOJI_LABELS = { 'very-happy':'Very Happy', satisfied:'Satisfied', neutral:'Neutral', unhappy:'Unhappy', angry:'Angry' };
+
+// ── SEED DEMO DATA ────────────────────────────────────────
+function seedDemo() {
+  if (feedbackData.length > 0) return;
+  const blocks = ['NBH','SBH','Vinay Sadan','Staff Quarters'];
+  const slots = ['Morning (7–10 AM)','Afternoon (10 AM–1 PM)','Evening (4–7 PM)','Night (7–9 PM)'];
+  const emojis = ['very-happy','satisfied','satisfied','neutral','unhappy'];
+  const issuePool = ['Clothes not cleaned properly','Missing items','Delayed delivery','Clothes damaged','Bad smell after wash','Wrong clothes returned','Machine not working','Staff behaviour'];
+  const recommends = ['yes','yes','yes','maybe','no'];
+  const names = ['Arjun S','Priya M','Rahul K','Sneha T','Vivek R','Ananya B','Kiran P','Deepak N','Lakshmi V','Sanjay M','Meena R','Raj K','Divya S','Anil T','Pooja B'];
+  const today = new Date();
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - Math.floor(Math.random()*28));
+    const rating = Math.floor(Math.random()*5)+1;
+    const cats = {};
+    CATEGORIES.forEach(c => cats[c.id] = Math.floor(Math.random()*3)+3);
+    const issues = rating <= 2 ? issuePool.slice(0,Math.floor(Math.random()*3)+1) : (Math.random()<.3 ? [issuePool[Math.floor(Math.random()*issuePool.length)]] : []);
+    feedbackData.push({
+      id: Date.now() - i*100000,
+      name: names[i%names.length],
+      roll: `BU21CS${String(i+1).padStart(3,'0')}`,
+      block: blocks[Math.floor(Math.random()*blocks.length)],
+      room: String(Math.floor(Math.random()*400)+100),
+      date: d.toISOString().split('T')[0],
+      slot: slots[Math.floor(Math.random()*slots.length)],
+      items: Math.floor(Math.random()*15)+3,
+      rating,
+      emoji: emojis[Math.floor(Math.random()*emojis.length)],
+      categories: cats,
+      issues,
+      positive: '',
+      improve: '',
+      recommend: recommends[Math.floor(Math.random()*recommends.length)],
+    });
+  }
+  save();
+}
+
+function save() { localStorage.setItem(STORE_KEY, JSON.stringify(feedbackData)); }
+
+// ── INIT FORM ────────────────────────────────────────────
+function initForm() {
+  // Category ratings are now static HTML — just set today's date
+  const dateField = document.getElementById('f-date');
+  if (dateField) dateField.valueAsDate = new Date();
+}
+
+let selectedEmoji = '';
+function selectEmoji(el) {
+  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedEmoji = el.dataset.val;
+}
+
+// ── SUBMIT ───────────────────────────────────────────────
+function submitFeedback() {
+  const overall = document.querySelector('input[name="overall"]:checked');
+  if (!overall) { alert('Please rate your overall experience.'); return; }
+
+  const cats = {};
+  CATEGORIES.forEach(c => {
+    const v = document.querySelector(`input[name="cat-${c.id}"]:checked`);
+    cats[c.id] = v ? parseInt(v.value) : null;
+  });
+
+  const issues = [...document.querySelectorAll('.check-grid input:checked')].map(i => i.value);
+
+  const entry = {
+    id: Date.now(),
+    name: document.getElementById('f-name').value || 'Anonymous',
+    roll: document.getElementById('f-roll').value || '—',
+    block: document.getElementById('f-block').value || 'Unknown',
+    room: document.getElementById('f-room').value || '—',
+    date: new Date().toISOString().split('T')[0],
+    slot: '—',
+    items: 0,
+    rating: parseInt(overall.value),
+    emoji: selectedEmoji || 'neutral',
+    categories: cats,
+    issues,
+    positive: document.getElementById('f-positive').value,
+    improve: document.getElementById('f-improve').value,
+    recommend: document.getElementById('f-recommend').value || 'maybe',
+  };
+
+  feedbackData.unshift(entry);
+  save();
+
+  // Reset
+  document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
+  document.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
+  document.querySelectorAll('input[type=text], input[type=tel], input[type=number]').forEach(i => i.value = '');
+  document.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+  document.querySelectorAll('textarea').forEach(t => t.value = '');
+  document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+  selectedEmoji = '';
+  showToast('✅ Feedback submitted successfully!');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── PAGE NAV ─────────────────────────────────────────────
+const ADMIN_PASSWORD = '9668';
+let isAdmin = false;
+
+function toggleAdminPwd() {
+  const inp = document.getElementById('admin-password');
+  const eye = document.getElementById('eye-toggle');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    eye.textContent = '🙈';
+  } else {
+    inp.type = 'password';
+    eye.textContent = '👁️';
+  }
+}
+function adminLogin() {
+  document.getElementById('admin-password').value = '';
+  document.getElementById('admin-error').style.display = 'none';
+  document.getElementById('admin-modal').classList.add('open');
+  setTimeout(() => document.getElementById('admin-password').focus(), 100);
+}
+function closeAdminModal() {
+  document.getElementById('admin-modal').classList.remove('open');
+}
+function checkAdmin() {
+  const pwd = document.getElementById('admin-password').value;
+  if (pwd === ADMIN_PASSWORD) {
+    isAdmin = true;
+    closeAdminModal();
+    document.getElementById('tab-dashboard').style.display = '';
+    document.getElementById('btn-admin-login').style.display = 'none';
+    document.getElementById('btn-admin-logout').style.display = '';
+    showPage('dashboard');
+  } else {
+    document.getElementById('admin-error').style.display = 'block';
+    document.getElementById('admin-password').value = '';
+    document.getElementById('admin-password').focus();
+  }
+}
+function adminLogout() {
+  isAdmin = false;
+  document.getElementById('tab-dashboard').style.display = 'none';
+  document.getElementById('btn-admin-login').style.display = '';
+  document.getElementById('btn-admin-logout').style.display = 'none';
+  showPage('form');
+}
+
+function showPage(p) {
+  if (p === 'dashboard' && !isAdmin) { adminLogin(); return; }
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-form').classList.toggle('active', p === 'form');
+  document.getElementById('tab-dashboard').classList.toggle('active', p === 'dashboard');
+  document.getElementById('page-'+p).classList.add('active');
+  if (p === 'dashboard') renderDashboard();
+}
+
+// ── QR CODE ──────────────────────────────────────────────
+let qrGenerated = false;
+function openQR() {
+  document.getElementById('qr-container').innerHTML = '';
+  qrGenerated = false;
+  document.getElementById('qr-url-display').textContent = '';
+  document.getElementById('qr-modal').classList.add('open');
+}
+function generateQR() {
+  const url = document.getElementById('qr-url-input').value.trim();
+  if (!url) { alert('Please enter a valid URL.'); return; }
+  document.getElementById('qr-url-display').textContent = url;
+  document.getElementById('qr-container').innerHTML = '';
+  new QRCode(document.getElementById('qr-container'), {
+    text: url, width: 200, height: 200,
+    colorDark: '#1A2E2B', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H
+  });
+  qrGenerated = true;
+}
+function closeQR() { document.getElementById('qr-modal').classList.remove('open'); }
+
+// ── DASHBOARD ────────────────────────────────────────────
+let charts = {};
+
+function getFiltered() {
+  const block = document.getElementById('filter-block').value;
+  const days = document.getElementById('filter-days').value;
+  let d = [...feedbackData];
+  if (block !== 'all') d = d.filter(f => f.block === block);
+  if (days !== 'all') {
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - parseInt(days));
+    d = d.filter(f => new Date(f.date) >= cutoff);
+  }
+  return d;
+}
+
+function renderDashboard() {
+  const data = getFiltered();
+  const block = document.getElementById('filter-block').value;
+  document.getElementById('dash-subtitle').textContent = `${data.length} response${data.length!==1?'s':''} · ${block==='all'?'All blocks':block}`;
+
+  // KPIs
+  const total = data.length;
+  const avgRating = total ? (data.reduce((a,f)=>a+f.rating,0)/total).toFixed(1) : '—';
+  const satCount = data.filter(f=>f.rating>=4).length;
+  const satRate = total ? Math.round(satCount/total*100)+'%' : '—';
+  const issueCount = data.filter(f=>f.issues && f.issues.length>0).length;
+
+  document.getElementById('kpi-total').textContent = total;
+  document.getElementById('kpi-avg').textContent = avgRating !== '—' ? avgRating+'★' : '—';
+  document.getElementById('kpi-sat').textContent = satRate;
+  document.getElementById('kpi-issues').textContent = issueCount;
+  document.getElementById('kpi-total-t').textContent = total ? `${total} total entries` : '';
+  const avgColor = avgRating >= 4 ? 'up' : avgRating >= 3 ? '' : 'down';
+  document.getElementById('kpi-avg-t').className = 'kpi-trend '+avgColor;
+  document.getElementById('kpi-avg-t').textContent = avgRating !== '—' ? (avgRating>=4?'🟢 Good':avgRating>=3?'🟡 Average':'🔴 Needs Improvement') : '';
+
+  // Rating Distribution
+  const ratingCounts = [1,2,3,4,5].map(r => data.filter(f=>f.rating===r).length);
+  renderBar('chartRating', ['1★','2★','3★','4★','5★'], ratingCounts,
+    ['#E74C3C','#E67E22','#F1C40F','#2ECC71','#007069'], 'Responses');
+
+  // Sentiment
+  const sentKeys = ['very-happy','satisfied','neutral','unhappy','angry'];
+  const sentCounts = sentKeys.map(k => data.filter(f=>f.emoji===k).length);
+  renderDoughnut('chartSentiment', sentKeys.map(k=>EMOJI_LABELS[k]), sentCounts,
+    ['#2ECC71','#3498DB','#95A5A6','#E67E22','#E74C3C']);
+
+  // Trend (last 14 days)
+  const trendDays = 14;
+  const trendLabels = [], trendVals = [];
+  for (let i = trendDays-1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const ds = d.toISOString().split('T')[0];
+    trendLabels.push(d.toLocaleDateString('en',{month:'short',day:'numeric'}));
+    trendVals.push(feedbackData.filter(f=>f.date===ds).length);
+  }
+  renderLine('chartTrend', trendLabels, trendVals);
+
+  // By Block
+  const bks = ['NBH','SBH','Vinay Sadan','Staff Quarters'];
+  const bkCounts = bks.map(b => feedbackData.filter(f=>f.block===b).length);
+  renderHBar('chartBlock', bks, bkCounts);
+
+  // Issues
+  const issueKeys = ['Clothes not cleaned properly','Missing items','Delayed delivery','Clothes damaged','Bad smell after wash','Wrong clothes returned','Machine not working','Staff behaviour'];
+  const issueCounts = issueKeys.map(k => data.filter(f=>f.issues&&f.issues.includes(k)).length);
+  const maxIssue = Math.max(...issueCounts, 1);
+  const sortedIssues = issueKeys.map((k,i)=>({k,c:issueCounts[i]})).sort((a,b)=>b.c-a.c);
+  document.getElementById('issue-bars').innerHTML = sortedIssues.map(({k,c})=>`
+    <div class="issue-row">
+      <div class="issue-name">${k}</div>
+      <div class="issue-bar-wrap"><div class="issue-bar" style="width:${(c/maxIssue*100)||0}%;background:${c>5?'var(--danger)':c>2?'var(--warn)':'var(--teal)'}"></div></div>
+      <div class="issue-count">${c}</div>
+    </div>`).join('');
+
+  // Category Ratings
+  const catAvgs = CATEGORIES.map(c => {
+    const vals = data.map(f=>f.categories&&f.categories[c.id]).filter(Boolean);
+    return vals.length ? (vals.reduce((a,v)=>a+v,0)/vals.length).toFixed(2) : 0;
+  });
+  renderBar('chartCategories', CATEGORIES.map(c=>c.label), catAvgs,
+    Array(CATEGORIES.length).fill('rgba(0,112,105,.8)'), 'Avg Rating', 5);
+
+  // Table
+  renderTable(data);
+
+  document.getElementById('table-count').textContent = data.length + ' entries';
+}
+
+function renderBar(id, labels, data, colors, label='Count', max=null) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: { labels, datasets: [{ label, data, backgroundColor: colors, borderRadius: 8, borderSkipped: false }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, max: max||undefined, grid: { color: '#F4F6F5' }, ticks: { font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } } } }
+  });
+}
+
+function renderDoughnut(id, labels, data, colors) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: { legend: { position: 'right', labels: { font: { size: 11 }, boxWidth: 12 } } } }
+  });
+}
+
+function renderLine(id, labels, data) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Feedback', data,
+      borderColor: '#007069', backgroundColor: 'rgba(0,112,105,.1)',
+      fill: true, tension: .4, pointRadius: 3, pointBackgroundColor: '#007069' }] },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, grid: { color: '#F4F6F5' }, ticks: { font: { size: 11 }, stepSize: 1 } },
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } } } }
+  });
+}
+
+function renderHBar(id, labels, data) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'Responses', data,
+      backgroundColor: 'rgba(242,107,67,.8)', borderRadius: 6, borderSkipped: false }] },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, grid: { color: '#F4F6F5' }, ticks: { font: { size: 11 } } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } } } }
+  });
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('feedback-tbody');
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="10" class="no-data">No feedback entries found.</td></tr>'; return; }
+  tbody.innerHTML = data.slice(0,30).map((f,i) => {
+    const stars = '★'.repeat(f.rating) + '☆'.repeat(5-f.rating);
+    const sentClass = f.rating>=4?'good':f.rating>=3?'avg':'poor';
+    const sentLabel = f.rating>=4?'Positive':f.rating>=3?'Neutral':'Negative';
+    return `<tr>
+      <td>${i+1}</td>
+      <td><strong>${f.name}</strong><br><span style="font-size:11px;color:var(--muted)">${f.roll}</span></td>
+      <td>${f.block}</td>
+      <td>${f.room}</td>
+      <td>${f.date}</td>
+      <td>${f.slot}</td>
+      <td><span class="stars-display">${stars}</span></td>
+      <td>${EMOJI_MAP[f.emoji]||'—'}</td>
+      <td>${f.issues&&f.issues.length?f.issues.map(i=>`<span class="tag poor" style="margin:2px;display:inline-block">${i}</span>`).join(''):'<span style="color:var(--muted);font-size:12px">None</span>'}</td>
+      <td><span class="tag ${f.recommend==='yes'?'good':f.recommend==='no'?'poor':'avg'}">${f.recommend||'—'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── CLEAR ALL DATA ────────────────────────────────────────
+function clearAllFeedback() {
+  if (!confirm('⚠️ Are you sure you want to delete ALL feedback data? This cannot be undone.')) return;
+  feedbackData = [];
+  save();
+  renderDashboard();
+  showToast('🗑️ All feedback data cleared.');
+}
+
+// ── EXPORT ────────────────────────────────────────────────
+function exportCSV() {
+  const data = getFiltered();
+  const headers = ['ID','Name','Roll','Block','Room','Date','Slot','Items','Rating','Emoji','Issues','Recommend','Positive','Improve'];
+  const rows = data.map(f => [
+    f.id, f.name, f.roll, f.block, f.room, f.date, f.slot, f.items, f.rating,
+    EMOJI_LABELS[f.emoji]||f.emoji, (f.issues||[]).join('|'), f.recommend, f.positive, f.improve
+  ].map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = `GITAM_Laundry_Feedback_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+}
+
+// ── BOOT ─────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  seedDemo();
+  initForm();
+});
+</script>
+</body>
+</html>
