@@ -509,7 +509,7 @@ tr:hover td { background: rgba(0,112,105,.03); }
 <!-- ══════════ FIREBASE SDK (CDN - no build tools needed) ══════════ -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, getDocs, doc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, getDocs, doc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 // ── FIREBASE CONFIG ──────────────────────────────────────
 const firebaseConfig = {
@@ -536,22 +536,22 @@ function setStatus(state, msg) {
   el.textContent = msg;
 }
 
-// Start real-time listener — dashboard updates instantly on any device
+// Start real-time listener — no orderBy (avoids index requirement), sort client-side
 function startListener() {
-  setStatus('connecting', '⏳ Connecting...');
-  const q = query(collection(db, COLLECTION), orderBy('timestamp', 'desc'));
-  unsubscribe = onSnapshot(q,
+  setStatus('connecting', '\u23f3 Connecting...');
+  unsubscribe = onSnapshot(collection(db, COLLECTION),
     (snapshot) => {
-      feedbackData = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      setStatus('connected', '🟢 Live');
-      // Re-render dashboard if it's open
+      feedbackData = snapshot.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      setStatus('connected', '\U0001f7e2 Live');
       if (document.getElementById('page-dashboard').classList.contains('active')) {
         renderDashboard();
       }
     },
     (err) => {
       console.error('Firestore error:', err);
-      setStatus('error', '🔴 Offline');
+      setStatus('error', '\U0001f534 Offline');
     }
   );
 }
