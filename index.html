@@ -610,6 +610,7 @@ async function submitFeedback() {
     showToast('✅ Feedback submitted successfully!');
   } catch (err) {
     console.error('Submit error:', err);
+    alert('Firebase Error: ' + (err.code || err.message || JSON.stringify(err)));
     showToast('❌ Error saving. Check connection.');
   } finally {
     btn.disabled = false;
