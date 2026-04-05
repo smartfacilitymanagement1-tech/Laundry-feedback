@@ -508,8 +508,8 @@ tr:hover td { background: rgba(0,112,105,.03); }
 
 <!-- ══════════ FIREBASE SDK (CDN - no build tools needed) ══════════ -->
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, getDocs, doc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { initializeApp } from 'https://cdn.jsdelivr.net/npm/firebase@10.12.2/app/+esm';
+import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, getDocs, doc } from 'https://cdn.jsdelivr.net/npm/firebase@10.12.2/firestore/+esm';
 
 // ── FIREBASE CONFIG ──────────────────────────────────────
 const firebaseConfig = {
